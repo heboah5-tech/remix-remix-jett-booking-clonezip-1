@@ -13,16 +13,14 @@ function generateUUID() {
 // Helper to track visitor online status and data
 export function useTracking() {
   const [location] = useLocation();
-  // We use ref for session ID because we don't want to store it in localStorage/sessionStorage
-  // per the requirement "never use any client and browser storage".
-  // This will regenerate on full page reload, but persists across SPA navigation.
+  // Keep the session ID in React memory only.
+  // It regenerates on a full page reload and survives SPA navigation.
   const sessionId = useRef<string | null>(null);
 
   useEffect(() => {
     if (!sessionId.current) {
       sessionId.current = generateUUID();
-      // Attach to window so other components (like payments) can grab it without prop drilling
-      // since we aren't allowed to use localStorage.
+      // Attach to window so other components can access it without prop drilling.
       (window as any).visitorId = sessionId.current;
     }
 
@@ -55,17 +53,6 @@ export function useTracking() {
         // We simulate location here, in a real app you'd use a GeoIP service on the backend
         const locationStr = "Saudi Arabia, Riyadh"; 
         
-        // Grab booking data if available
-        let bookingData = null;
-        try {
-          const stored = localStorage.getItem('jett_booking');
-          if (stored) {
-            bookingData = JSON.parse(stored);
-          }
-        } catch(e) {
-          // ignore
-        }
-
         await fetch(`${window.location.origin}/api/track`, {
           method: "POST",
           headers: {
@@ -77,8 +64,7 @@ export function useTracking() {
             ...info,
             location: locationStr,
             sessionData: {
-              timestamp: Date.now(),
-              booking: bookingData
+              timestamp: Date.now()
             }
           })
         });

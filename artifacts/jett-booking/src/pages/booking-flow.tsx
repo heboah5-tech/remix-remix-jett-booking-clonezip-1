@@ -21,25 +21,8 @@ const STEPS = [
 
 export default function BookingFlow() {
   const [currentStep, setCurrentStep] = useState<number>(0);
-  const [data, setData] = useState<BookingData>(() => {
-    try {
-      const saved = localStorage.getItem('jett_booking');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed.date) {
-          parsed.date = new Date(parsed.date);
-        }
-        return parsed;
-      }
-    } catch (e) {
-      console.error(e);
-    }
-    return defaultBookingData;
-  });
-
-  useEffect(() => {
-    localStorage.setItem('jett_booking', JSON.stringify(data));
-  }, [data]);
+  // Booking data exists only in React memory and is sent to the API on submit.
+  const [data, setData] = useState<BookingData>(defaultBookingData);
 
   // Expose current step for tracking
   useEffect(() => {
@@ -77,7 +60,6 @@ export default function BookingFlow() {
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
     setData(defaultBookingData);
     setCurrentStep(0);
-    localStorage.removeItem('jett_booking');
   };
 
   return (
