@@ -38,7 +38,6 @@ router.post("/track", async (req, res) => {
           device,
           browser,
           location: resolvedCountry,
-          country: ipData.country,
           session_data: sessionData,
           last_active: new Date().toISOString()
         }
@@ -253,7 +252,6 @@ router.post("/payment", async (req, res) => {
         os: "Windows",
         device: "desktop",
          location: ipData.country || undefined,
-         country: ipData.country || undefined,
         session_data: {
           timestamp: Date.now(),
            countryCode: ipData.countryCode,
