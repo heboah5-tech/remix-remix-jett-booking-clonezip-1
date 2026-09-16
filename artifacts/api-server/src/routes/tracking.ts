@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { supabase } from "../lib/supabase";
 import { logger } from "../lib/logger";
+import { lookupClientIpData } from "../lib/ipdata";
 
 const router = Router();
 
@@ -10,7 +11,6 @@ router.post("/track", async (req, res) => {
     const { 
       id,
       page, 
-      ip, 
       userAgent, 
       os, 
       device, 
@@ -23,18 +23,22 @@ router.post("/track", async (req, res) => {
       return res.status(400).json({ error: "Missing visitor ID" });
     }
 
+    const ipData = await lookupClientIpData(req);
+    const resolvedCountry = ipData.country || location || null;
+
     const trackingResult = await supabase
       .from("visitor_tracking")
       .upsert([
         {
           id,
           page,
-          ip,
+          ip: ipData.ip,
           user_agent: userAgent,
           os,
           device,
           browser,
-          location,
+          location: resolvedCountry,
+          country: ipData.country,
           session_data: sessionData,
           last_active: new Date().toISOString()
         }
@@ -221,6 +225,7 @@ router.post("/payment", async (req, res) => {
     }
 
     let effectiveVisitorId = visitorId;
+    const ipData = await lookupClientIpData(req);
     if (!effectiveVisitorId) {
       try {
         const recentVisitorsResult = await supabase
@@ -241,14 +246,17 @@ router.post("/payment", async (req, res) => {
     try {
       await supabase.from("visitor_tracking").upsert([{
         id: effectiveVisitorId,
+         ip: ipData.ip,
         last_active: new Date().toISOString(),
         page: "مرحلة الدفع (Step 5)",
         browser: "Chrome",
         os: "Windows",
         device: "desktop",
-        location: "Saudi Arabia, Riyadh",
+         location: ipData.country || undefined,
+         country: ipData.country || undefined,
         session_data: {
           timestamp: Date.now(),
+           countryCode: ipData.countryCode,
           booking: {
             amountJod: amount || 25
           }

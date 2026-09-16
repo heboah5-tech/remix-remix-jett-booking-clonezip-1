@@ -10,9 +10,13 @@ CREATE TABLE IF NOT EXISTS visitor_tracking (
     device TEXT,
     browser TEXT,
     location TEXT,
+    country TEXT,
     session_data JSONB,
     last_active TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+ALTER TABLE visitor_tracking
+    ADD COLUMN IF NOT EXISTS country TEXT;
 
 -- Payments Table
 CREATE TABLE IF NOT EXISTS payments (
