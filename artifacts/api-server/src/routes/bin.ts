@@ -29,11 +29,11 @@ router.get("/bin/:bin", async (req, res) => {
 
     const data = await response.json();
 
-    res.json(data);
+    return res.json(data);
   } catch (error) {
     console.error('BINlist error:', error);
 
-    res.status(500).json({
+    return res.status(500).json({
       error: 'BIN lookup failed',
     });
   }

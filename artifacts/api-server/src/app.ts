@@ -33,6 +33,12 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use("/api", router);
 
+// Keep API failures JSON-shaped so clients never receive the frontend HTML shell
+// when an API path is missing.
+app.use("/api", (_req, res) => {
+  res.status(404).json({ error: "API endpoint not found" });
+});
+
 const possibleClientPaths = [
   path.resolve(process.cwd(), "artifacts/jett-booking/dist/public"),
   path.resolve(process.cwd(), "../jett-booking/dist/public"),
