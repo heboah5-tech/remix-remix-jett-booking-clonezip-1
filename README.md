@@ -2,19 +2,17 @@
 <img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
 </div>
 
-# Run and deploy your AI Studio app
+# JETT Booking
 
-This contains everything you need to run your app locally.
+A React and Express booking experience for JETT bus services.
 
-View your app in AI Studio: https://ai.studio/apps/e65c58a4-ab0a-49a6-9a1a-9653de820d9a
+## Run on Replit
 
-## Run Locally
+The registered artifact workflows run the frontend and API independently:
 
-**Prerequisites:**  Node.js
+- `pnpm --filter @workspace/jett-booking run dev`
+- `pnpm --filter @workspace/api-server run dev`
 
-
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+Install dependencies with `pnpm install`, then use the Replit workflow controls.
+The API reads `SUPABASE_URL` and either `SUPABASE_SERVICE_ROLE_KEY` or
+`SUPABASE_ANON_KEY` for persistent booking and tracking data.

@@ -9,6 +9,43 @@ import BookingFlow from "@/pages/booking-flow";
 import { useTracking } from "@/hooks/use-tracking";
 
 const queryClient = new QueryClient();
+const MOBILE_MAX_WIDTH = 767;
+
+function useIsMobileViewport() {
+  const [isMobile, setIsMobile] = useState(
+    () => typeof window !== "undefined" && window.innerWidth <= MOBILE_MAX_WIDTH,
+  );
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia(`(max-width: ${MOBILE_MAX_WIDTH}px)`);
+    const handleChange = () => setIsMobile(mediaQuery.matches);
+
+    handleChange();
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, []);
+
+  return isMobile;
+}
+
+function AccessDenied() {
+  return (
+    <main className="flex min-h-screen items-center justify-center bg-slate-950 px-6 text-center text-white">
+      <section className="max-w-md">
+        <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full border border-white/15 bg-white/10 text-2xl">
+          🔒
+        </div>
+        <p className="mb-3 text-sm font-semibold uppercase tracking-[0.24em] text-amber-300">
+          Access denied
+        </p>
+        <h1 className="mb-4 text-3xl font-bold">Mobile access only</h1>
+        <p className="text-base leading-7 text-slate-300">
+          Please open JETT Booking from a mobile phone to continue.
+        </p>
+      </section>
+    </main>
+  );
+}
 
 function ScrollToTop() {
   const [location] = useLocation();
@@ -39,10 +76,16 @@ function RoutedErrorBoundary({ children }: { children: React.ReactNode }) {
 }
 
 function App() {
+  const isMobile = useIsMobileViewport();
+
   useEffect(() => {
     document.documentElement.dir = "rtl";
     document.documentElement.lang = "ar";
   }, []);
+
+  if (!isMobile) {
+    return <AccessDenied />;
+  }
 
   return (
     <QueryClientProvider client={queryClient}>

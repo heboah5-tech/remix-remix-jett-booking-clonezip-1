@@ -3,11 +3,11 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "build": "npm run build --workspace=@workspace/jett-booking && npm run build --workspace=@workspace/api-server",
+    "build": "pnpm --filter @workspace/jett-booking run build && pnpm --filter @workspace/api-server run build",
     "typecheck:libs": "tsc --build",
-    "typecheck": "npm run typecheck:libs && npm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck",
-    "start": "npm run start --workspace=@workspace/api-server",
-    "dev": "npm run build --workspace=@workspace/jett-booking && npm run dev --workspace=@workspace/api-server"
+    "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck",
+    "start": "pnpm --filter @workspace/api-server run start",
+    "dev": "pnpm --filter @workspace/jett-booking run build && pnpm --filter @workspace/api-server run dev"
   },
   "private": true,
   "dependencies": {

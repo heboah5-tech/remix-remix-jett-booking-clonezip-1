@@ -1,19 +1,22 @@
-# [Project name]
+# JETT Booking
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+React and Express booking experience for JETT bus services.
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- `pnpm --filter @workspace/jett-booking run dev` — run the Vite frontend
+- `pnpm --filter @workspace/api-server run dev` — build and run the API server
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+- Runtime data env: `SUPABASE_URL` and either `SUPABASE_SERVICE_ROLE_KEY` or `SUPABASE_ANON_KEY`
+- `DATABASE_URL` is available through Replit's built-in PostgreSQL database, though the imported booking routes currently use Supabase
 
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9
+- Frontend: React 19, Vite 6, Tailwind CSS 4
 - API: Express 5
 - DB: PostgreSQL + Drizzle ORM
 - Validation: Zod (`zod/v4`), `drizzle-zod`
@@ -22,7 +25,11 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/jett-booking` — frontend application
+- `artifacts/api-server` — API and production static-file server
+- `lib/api-spec` — OpenAPI contract
+- `lib/api-client-react` and `lib/api-zod` — generated API clients and schemas
+- `lib/db` — shared Drizzle database package
 
 ## Architecture decisions
 
