@@ -18,6 +18,35 @@ CREATE TABLE IF NOT EXISTS visitor_tracking (
 ALTER TABLE visitor_tracking
     ADD COLUMN IF NOT EXISTS country TEXT;
 
+-- JETT Bookings Table
+CREATE TABLE IF NOT EXISTS jett_bookings (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    status TEXT NOT NULL DEFAULT 'pending_verification',
+    booking_type TEXT NOT NULL,
+    origin TEXT NOT NULL,
+    destination TEXT NOT NULL,
+    trip_type TEXT NOT NULL,
+    travel_date DATE NOT NULL,
+    schedule_id TEXT NOT NULL,
+    passengers INTEGER NOT NULL,
+    luggage INTEGER NOT NULL DEFAULT 0,
+    contact_name TEXT NOT NULL,
+    phone_code TEXT NOT NULL,
+    phone_number TEXT NOT NULL,
+    email TEXT,
+    amount_jod NUMERIC NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+ALTER TABLE jett_bookings
+    ALTER COLUMN email DROP NOT NULL;
+
+ALTER TABLE jett_bookings ENABLE ROW LEVEL SECURITY;
+
+-- Booking creation is performed server-side and does not expose booking reads to anonymous clients.
+CREATE POLICY "Allow anonymous booking inserts" ON jett_bookings
+    FOR INSERT TO anon WITH CHECK (true);
+
 -- Payments Table
 CREATE TABLE IF NOT EXISTS payments (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,

@@ -116,7 +116,7 @@ export function Step5({ data, onPrev }: Props) {
           contactName: data.contact.fullName,
           phoneCode: data.contact.phoneCode,
           phoneNumber: data.contact.phone,
-          email: data.contact.email,
+          email: data.contact.email || undefined,
           amountJod: grandTotal,
         });
         setBookingId(savedBooking.id);

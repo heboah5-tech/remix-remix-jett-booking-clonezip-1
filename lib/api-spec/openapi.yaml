@@ -131,7 +131,6 @@ components:
         - contactName
         - phoneCode
         - phoneNumber
-        - email
         - amountJod
     BookingCreatedResponse:
       type: object

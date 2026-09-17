@@ -24,50 +24,52 @@ router.post("/bookings", async (req, res) => {
     contact_name: booking.contactName,
     phone_code: booking.phoneCode,
     phone_number: booking.phoneNumber,
-    email: booking.email,
+    email: booking.email || null,
     amount_jod: booking.amountJod,
   };
 
   try {
     const supabaseUrl = process.env.SUPABASE_URL?.replace(/\/+$/, "");
-    const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
+    const supabaseKey =
+      process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
 
-    if (supabaseUrl && supabaseAnonKey) {
-      const response = await fetch(`${supabaseUrl}/rest/v1/jett_bookings`, {
-        method: "POST",
-        headers: {
-          apikey: supabaseAnonKey,
-          Authorization: `Bearer ${supabaseAnonKey}`,
-          "Content-Type": "application/json",
-          Prefer: "return=representation",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (response.ok) {
-        const rows = (await response.json()) as Array<{ id?: unknown }>;
-        const result = CreateBookingResponse.parse({
-          id: rows[0]?.id || crypto.randomUUID(),
-          status: "pending_verification",
-        });
-        return res.status(201).json(result);
-      }
+    if (!supabaseUrl || !supabaseKey) {
+      req.log.error("Booking storage is not configured");
+      return res.status(503).json({ error: "Booking storage is not configured" });
     }
 
-    // Fallback in-memory success for seamless reservation demo
-    const result = CreateBookingResponse.parse({
-      id: crypto.randomUUID(),
-      status: "pending_verification",
+    const response = await fetch(`${supabaseUrl}/rest/v1/jett_bookings`, {
+      method: "POST",
+      headers: {
+        apikey: supabaseKey,
+        Authorization: `Bearer ${supabaseKey}`,
+        "Content-Type": "application/json",
+        Prefer: "return=representation",
+      },
+      body: JSON.stringify(payload),
     });
 
-    return res.status(201).json(result);
-  } catch (error) {
-    req.log.error({ error }, "Booking storage fallback activated");
+    if (!response.ok) {
+      const errorText = await response.text();
+      req.log.error(
+        { status: response.status, errorText },
+        "Supabase booking insert failed",
+      );
+      return res.status(502).json({ error: "Unable to store booking" });
+    }
+
+    const rows = (await response.json()) as Array<{
+      id?: unknown;
+      status?: unknown;
+    }>;
     const result = CreateBookingResponse.parse({
-      id: crypto.randomUUID(),
-      status: "pending_verification",
+      id: rows[0]?.id || crypto.randomUUID(),
+      status: rows[0]?.status || "pending_verification",
     });
     return res.status(201).json(result);
+  } catch (error) {
+    req.log.error({ error }, "Booking storage request failed");
+    return res.status(502).json({ error: "Unable to store booking" });
   }
 });
 

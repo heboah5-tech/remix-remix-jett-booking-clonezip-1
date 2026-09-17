@@ -60,7 +60,7 @@ export const CreateBookingBody = zod.object({
   "contactName": zod.string().min(createBookingBodyContactNameMin).max(createBookingBodyContactNameMax),
   "phoneCode": zod.string().min(createBookingBodyPhoneCodeMin).max(createBookingBodyPhoneCodeMax),
   "phoneNumber": zod.string().min(createBookingBodyPhoneNumberMin).max(createBookingBodyPhoneNumberMax),
-  "email": zod.string().email().max(createBookingBodyEmailMax),
+  "email": zod.string().email().max(createBookingBodyEmailMax).optional(),
   "amountJod": zod.number().min(createBookingBodyAmountJodMin).max(createBookingBodyAmountJodMax)
 })
 
@@ -68,3 +68,5 @@ export const CreateBookingResponse = zod.object({
   "id": zod.string().uuid(),
   "status": zod.enum(['pending_verification'])
 })
+
+

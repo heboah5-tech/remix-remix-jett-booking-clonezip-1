@@ -53,7 +53,7 @@ export interface CreateBookingRequest {
      */
   phoneNumber: string;
   /** @maxLength 254 */
-  email: string;
+  email?: string;
   /**
      * @minimum 0
      * @maximum 100000
