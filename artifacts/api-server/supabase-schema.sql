@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS visitor_tracking (
     browser TEXT,
     location TEXT,
     country TEXT,
-    session_data JSONB,
+    sessionData JSONB,
     last_active TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
