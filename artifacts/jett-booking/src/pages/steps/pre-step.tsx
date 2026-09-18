@@ -1,6 +1,5 @@
 import { BookingData } from '@/lib/booking-data';
-import { Card, CardContent } from '@/components/ui/card';
-import { ShieldAlert, Info, ArrowLeft, CalendarDays, Luggage, Zap, Clock, ShieldCheck, ArrowDown } from 'lucide-react';
+import { ShieldAlert, Info, ArrowLeft, CalendarDays, LockKeyhole, Clock, ShieldCheck, ArrowDown, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 type Props = {
@@ -16,123 +15,120 @@ export function PreStep({ updateData, onNext }: Props) {
   };
 
   return (
-    <div className="flex-1 flex flex-col p-4 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12">
-
-      <div className="pt-2 text-center">
-        <p className="text-xs font-bold text-secondary mb-2">رحلتك تبدأ من هنا</p>
-        <h1 className="text-2xl font-black leading-tight text-primary">
-          حجز تذاكر جسر الملك حسين
-        </h1>
-      </div>
+    <div dir="rtl" className="flex-1 flex flex-col px-[10px] pt-[14px] animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12">
 
       {/* Alerts */}
-      <div className="flex flex-col gap-3">
-        <div className="bg-amber-50/80 border border-amber-200/60 rounded-2xl p-4 flex gap-4 shadow-sm">
-          <div className="text-amber-600 shrink-0 mt-0.5">
-            <ShieldAlert className="h-5 w-5" />
+      <div className="flex flex-col gap-[10px]">
+        <div className="min-h-[158px] rounded-[15px] border-2 border-[#144d5a] bg-[#fbfcfc] px-[14px] py-[15px] text-[#143f4a]">
+          <div className="relative min-h-[22px]">
+            <X className="absolute left-0 top-0.5 h-[16px] w-[16px] text-[#9daeb4]" />
+            <div className="absolute right-0 top-0 flex items-center gap-2">
+              <span className="text-[20px] leading-none text-[#f1bd00]">⚠</span>
+              <ShieldAlert className="h-[19px] w-[19px] text-[#143f4a]" />
+            </div>
+            <h3 className="pr-[52px] text-right text-[15px] font-extrabold leading-tight">
+              تنبيه أمني هام: احذروا المواقع المزيفة
+            </h3>
           </div>
-          <div>
-            <h3 className="font-bold text-sm text-amber-900">تنبيه أمني هام</h3>
-            <p className="text-xs text-amber-700/80 mt-1 leading-relaxed">
-              احذروا المواقع المزيفة. نود تذكيركم بعدم إدخال أي معلومات شخصية أو مالية إلا عبر موقع جت الرسمي لحمايتكم.
-            </p>
-          </div>
+          <p className="mt-[13px] text-right text-[12.5px] font-medium leading-[1.7] text-[#3b4d52]">
+            لوحظ مؤخراً وجود مواقع إلكترونية مزيفة تحاول الاحتيال وانتحال هوية جت. نود تذكيركم بعدم إدخال أي معلومات شخصية أو مالية إلا عبر موقع جت الرسمي:
+            <span dir="ltr" className="mx-1 font-bold text-[#0d6078]">https://www.jett.com.jo</span>
+            . حيث جت غير مسؤولة عن أي معاملات تتم خارج هذا الرابط الرسمي.
+          </p>
         </div>
 
-        <div className="bg-blue-50/80 border border-blue-200/60 rounded-2xl p-4 flex gap-4 shadow-sm">
-          <div className="text-blue-600 shrink-0 mt-0.5">
-            <Info className="h-5 w-5" />
+        <div className="min-h-[160px] rounded-[15px] border-2 border-[#144d5a] bg-[#fbfcfc] px-[14px] py-[15px] text-[#143f4a]">
+          <div className="relative min-h-[22px]">
+            <X className="absolute left-0 top-0.5 h-[16px] w-[16px] text-[#9daeb4]" />
+            <Info className="absolute right-0 top-0.5 h-[18px] w-[18px]" />
+            <h3 className="pr-[28px] text-right text-[15px] font-extrabold leading-tight">
+              شراء الأمتعة الإضافية متاح عبر المنصة فقط
+            </h3>
           </div>
-          <div>
-            <h3 className="font-bold text-sm text-blue-900">شراء الأمتعة الإضافية</h3>
-            <p className="text-xs text-blue-700/80 mt-1 leading-relaxed">
-              يرجى العلم بأن خيار شراء الأمتعة الإضافية متاح حصرياً وفقط عبر موقعنا الإلكتروني. لا تتوفر أي أجهزة دفع إلكتروني (POS) أو مكاتب مبيعات في جسر الملك حسين.
-            </p>
-          </div>
+          <p className="mt-[13px] text-right text-[12.5px] font-medium leading-[1.7] text-[#3b4d52]">
+            يرجى العلم بأن خيار شراء الأمتعة الإضافية متاحة حصرياً وفقط عبر موقعنا الإلكتروني الرسمي. ولا تتوفر أي أجهزة دفع إلكتروني (POS) أو مكاتب مبيعات لشراء الأمتعة الإضافية في جسر الملك حسين. يرجى التأكد من إتمام عملية الشراء عبر المنصة قبل الوصول إلى الجسر تجنباً لأي تأخير في رحلتكم.
+          </p>
         </div>
       </div>
 
-      <div className="flex flex-col items-center justify-center mt-4 mb-2 text-muted-foreground">
-        <span className="text-xs mb-2 font-medium">اسحب للأسفل لبدء الحجز</span>
+      <div className="mt-[20px] flex flex-col items-center justify-center text-[#657278]">
+        <span className="text-[13px] font-semibold">اسحب للأسفل لبدء الحجز</span>
         <motion.div
           animate={{ y: [0, 5, 0] }}
           transition={{ repeat: Infinity, duration: 1.5 }}
+          className="mt-1"
         >
-          <ArrowDown className="h-4 w-4" />
+          <ArrowDown className="h-[19px] w-[19px]" />
         </motion.div>
       </div>
 
-      <div className="text-center mb-2">
-        <h2 className="text-2xl font-black text-foreground tracking-tight">ابدأ رحلتك</h2>
-        <p className="text-sm text-muted-foreground mt-1">حدد خيار الحجز الذي يناسب احتياجاتك للمتابعة</p>
+      <div className="mt-[22px] text-center">
+        <h2 className="text-[24px] font-black tracking-tight text-[#123f4d]">اختر نوع الحجز</h2>
+        <p className="mt-2 text-[14px] font-medium text-[#7a7d80]">حدد خيار الحجز الذي يناسب احتياجاتك</p>
       </div>
 
-      <div className="flex flex-col gap-4">
-        {/* Card 1 */}
-        <Card
-          className="group relative overflow-hidden cursor-pointer border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 bg-white rounded-3xl"
+      <div className="mt-[18px] flex flex-col gap-[14px]">
+        <button
+          type="button"
+          className="group relative h-[310px] w-full overflow-hidden rounded-[22px] border-2 border-[#144d5a] bg-[linear-gradient(180deg,#ffffff_0%,#edf3f5_38%,#acc6d1_100%)] text-[#123f4d] shadow-[0_3px_10px_rgba(16,63,75,0.08)] transition-transform hover:-translate-y-0.5"
           onClick={() => handleSelect('arab')}
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-          <CardContent className="p-6 flex items-center gap-5">
-            <div className="bg-primary/5 p-4 rounded-2xl shrink-0 text-primary group-hover:scale-105 group-hover:bg-primary group-hover:text-white transition-all duration-300">
-              <CalendarDays className="h-6 w-6" />
-            </div>
-            <div className="flex-1">
-              <h3 className="text-lg font-bold text-foreground">حجز تذكرة رحلة</h3>
-              <p className="text-xs text-muted-foreground mt-1 leading-tight">احجز تذكرتك للمغادرة براحة وأمان عبر الجسر</p>
-            </div>
-            <div className="text-gray-300 group-hover:text-primary transition-colors group-hover:-translate-x-1 duration-300">
-              <ArrowLeft className="h-6 w-6" />
-            </div>
-          </CardContent>
-        </Card>
+          <div className="absolute right-[30px] top-[17px] flex h-[59px] w-[59px] items-center justify-center rounded-full bg-[#e4ebee] text-[#123f4d]">
+            <CalendarDays className="h-[31px] w-[31px]" strokeWidth={1.9} />
+          </div>
+          <span className="absolute inset-x-0 top-[143px] text-center text-[25px] font-extrabold">حجز مغادرين عرب</span>
+          <span className="absolute bottom-[17px] left-[17px] right-[17px] flex h-[55px] items-center justify-center gap-3 rounded-[9px] bg-[#104b5a] text-[17px] font-bold text-white shadow-sm">
+            <span>اختر</span>
+            <ArrowLeft className="h-5 w-5" />
+          </span>
+        </button>
 
-        {/* Card 2 */}
-        <Card
-          className="group relative overflow-hidden cursor-pointer border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 bg-white rounded-3xl"
+        <button
+          type="button"
+          className="group relative h-[310px] w-full overflow-hidden rounded-[22px] border-2 border-[#9caab0] bg-[linear-gradient(180deg,#ffffff_0%,#edf3f5_38%,#acc6d1_100%)] text-[#123f4d] shadow-[0_3px_10px_rgba(16,63,75,0.08)] transition-transform hover:-translate-y-0.5"
           onClick={() => handleSelect('luggage')}
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-          <CardContent className="p-6 flex items-center gap-5">
-            <div className="bg-primary/5 p-4 rounded-2xl shrink-0 text-primary group-hover:scale-105 group-hover:bg-primary group-hover:text-white transition-all duration-300">
-              <Luggage className="h-6 w-6" />
-            </div>
-            <div className="flex-1">
-              <h3 className="text-lg font-bold text-foreground">إضافة أمتعة</h3>
-              <p className="text-xs text-muted-foreground mt-1 leading-tight">أضف أمتعة إضافية لحجزك الحالي المسبق بسهولة</p>
-            </div>
-            <div className="text-gray-300 group-hover:text-primary transition-colors group-hover:-translate-x-1 duration-300">
-              <ArrowLeft className="h-6 w-6" />
-            </div>
-          </CardContent>
-        </Card>
+          <div className="absolute right-[30px] top-[17px] flex h-[59px] w-[59px] items-center justify-center rounded-full bg-[#e4ebee] text-[#123f4d]">
+            <LockKeyhole className="h-[30px] w-[30px]" strokeWidth={1.9} />
+          </div>
+          <span className="absolute inset-x-0 top-[143px] text-center text-[25px] font-extrabold">إضافة أمتعة مغادرين</span>
+          <span className="absolute bottom-[17px] left-[17px] right-[17px] flex h-[55px] items-center justify-center gap-3 rounded-[9px] bg-[#104b5a] text-[17px] font-bold text-white shadow-sm">
+            <span>اختر</span>
+            <ArrowLeft className="h-5 w-5" />
+          </span>
+        </button>
       </div>
 
       {/* Why book with us */}
-      <div className="mt-8">
-        <h3 className="font-bold text-foreground text-sm mb-4 text-center">لماذا تحجز عبر منصتنا</h3>
-
-        <div className="grid grid-cols-3 gap-3">
-          <div className="bg-white rounded-2xl p-4 flex flex-col items-center text-center gap-2 border border-gray-100 shadow-sm">
-            <div className="bg-primary/5 p-3 rounded-full text-primary">
-              <Zap className="h-5 w-5" />
+      <div className="mt-[29px] rounded-t-[24px] bg-white px-[18px] pb-[24px] pt-[27px] shadow-[0_-2px_14px_rgba(25,63,74,0.04)]">
+        <h3 className="border-b border-[#e5e8e9] pb-[14px] text-right text-[20px] font-extrabold text-[#111c20]">لماذا تحجز معنا</h3>
+        <div className="divide-y divide-[#e8eaeb]">
+          <div className="flex min-h-[91px] items-center justify-between gap-4">
+            <div className="flex h-[50px] w-[50px] shrink-0 items-center justify-center rounded-full bg-[#f0f3f4] text-[#123f4d]">
+              <CalendarDays className="h-6 w-6" strokeWidth={1.8} />
             </div>
-            <h4 className="font-bold text-xs text-foreground">حجز سريع</h4>
+            <div className="flex-1 text-right">
+              <h4 className="text-[17px] font-bold text-[#111c20]">حجز إلكتروني</h4>
+              <p className="mt-1 text-[13px] text-[#7d8183]">حجز إلكتروني سريع وسهل</p>
+            </div>
           </div>
-
-          <div className="bg-white rounded-2xl p-4 flex flex-col items-center text-center gap-2 border border-gray-100 shadow-sm">
-            <div className="bg-primary/5 p-3 rounded-full text-primary">
-              <Clock className="h-5 w-5" />
+          <div className="flex min-h-[91px] items-center justify-between gap-4">
+            <div className="flex h-[50px] w-[50px] shrink-0 items-center justify-center rounded-full bg-[#f0f3f4] text-[#123f4d]">
+              <Clock className="h-6 w-6" strokeWidth={1.8} />
             </div>
-            <h4 className="font-bold text-xs text-foreground">وقتك أثمن</h4>
+            <div className="flex-1 text-right">
+              <h4 className="text-[17px] font-bold text-[#111c20]">سريع وفعال</h4>
+              <p className="mt-1 text-[13px] text-[#7d8183]">وفر وقتك مع خدمة حجز سهلة</p>
+            </div>
           </div>
-
-          <div className="bg-white rounded-2xl p-4 flex flex-col items-center text-center gap-2 border border-gray-100 shadow-sm">
-            <div className="bg-primary/5 p-3 rounded-full text-primary">
-              <ShieldCheck className="h-5 w-5" />
+          <div className="flex min-h-[91px] items-center justify-between gap-4">
+            <div className="flex h-[50px] w-[50px] shrink-0 items-center justify-center rounded-full bg-[#f0f3f4] text-[#123f4d]">
+              <ShieldCheck className="h-6 w-6" strokeWidth={1.8} />
             </div>
-            <h4 className="font-bold text-xs text-foreground">دفع آمن</h4>
+            <div className="flex-1 text-right">
+              <h4 className="text-[17px] font-bold text-[#111c20]">آمن وموثوق</h4>
+              <p className="mt-1 text-[13px] text-[#7d8183]">بياناتك محمية طوال الرحلة</p>
+            </div>
           </div>
         </div>
       </div>

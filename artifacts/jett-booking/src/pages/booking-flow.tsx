@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { BookingData, defaultBookingData } from '@/lib/booking-data';
-import { Globe, Check } from 'lucide-react';
+import { Globe, Check, MessageCircle } from 'lucide-react';
 import jettLogo from '@assets/jett_header_1789397361449.png';
 import { Footer } from '@/components/footer';
 import { PreStep } from './steps/pre-step';
@@ -63,23 +63,21 @@ export default function BookingFlow() {
   };
 
   return (
-    <div className="min-h-[100dvh] bg-background flex flex-col mx-auto max-w-md relative shadow-2xl overflow-x-hidden font-sans">
+    <div dir="rtl" className="min-h-[100dvh] bg-[#f4f6f8] flex flex-col mx-auto max-w-md relative overflow-x-hidden font-sans">
       {/* Header */}
-      <header className="flex items-center justify-between p-4 bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-gray-100 shadow-sm">
-        <Button variant="ghost" size="icon" className="rounded-full hover:bg-gray-100 text-primary">
+      <header dir="ltr" className="h-[78px] shrink-0 flex items-center justify-between px-5 bg-white sticky top-0 z-50 border-b border-[#dce1e4]">
+        <Button variant="ghost" size="icon" className="rounded-full hover:bg-gray-100 text-black">
           <Globe className="h-5 w-5" />
         </Button>
-        <div className="flex items-center justify-center">
-          <img
-            src={jettLogo}
-            alt="JETT"
-            className="h-auto w-[80px] object-contain cursor-pointer transition-transform hover:scale-105"
-            onClick={currentStep > 0 ? () => {
-              window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
-              setCurrentStep(0);
-            } : undefined}
-          />
-        </div>
+        <img
+          src={jettLogo}
+          alt="JETT"
+          className="h-auto w-[48px] object-contain cursor-pointer"
+          onClick={currentStep > 0 ? () => {
+            window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+            setCurrentStep(0);
+          } : undefined}
+        />
       </header>
 
       {/* Progress Indicator */}
@@ -134,6 +132,16 @@ export default function BookingFlow() {
         {currentStep === 4 && <Step4 onNext={nextStep} onPrev={prevStep} data={data} updateData={updateData} />}
         {currentStep === 5 && <Step5 onNext={resetBooking} onPrev={prevStep} data={data} updateData={updateData} />}
       </main>
+
+      {currentStep === 0 && (
+        <button
+          type="button"
+          aria-label="المساعدة"
+          className="fixed bottom-5 left-5 z-50 flex h-[60px] w-[60px] items-center justify-center rounded-full bg-[#0d4b59] text-white shadow-[0_8px_18px_rgba(13,75,89,0.28)] transition-transform hover:scale-105"
+        >
+          <MessageCircle className="h-7 w-7" strokeWidth={2.2} />
+        </button>
+      )}
 
       {/* App Footer */}
       <Footer />
