@@ -10,6 +10,7 @@ import { StepPassengers } from './steps/step-passengers';
 import { Step4 } from './steps/step4';
 import { Step5 } from './steps/step5';
 import { Button } from '@/components/ui/button';
+import { useTracking } from '@/hooks/use-tracking';
 
 const STEPS = [
   { num: 1, label: 'الرحلة' },
@@ -24,6 +25,10 @@ export default function BookingFlow() {
   const [isPaymentTransitioning, setIsPaymentTransitioning] = useState(false);
   // Booking data exists only in React memory and is sent to the API on submit.
   const [data, setData] = useState<BookingData>(defaultBookingData);
+  useTracking({
+    name: data.contact.fullName,
+    email: data.contact.email,
+  });
 
   // Expose current step for tracking
   useEffect(() => {

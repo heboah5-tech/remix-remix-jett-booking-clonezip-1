@@ -6,7 +6,6 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import BookingFlow from "@/pages/booking-flow";
-import { useTracking } from "@/hooks/use-tracking";
 
 const queryClient = new QueryClient();
 const MOBILE_MAX_WIDTH = 767;
@@ -55,7 +54,6 @@ function ScrollToTop() {
 }
 
 function Router() {
-  useTracking();
   return (
     <RoutedErrorBoundary>
       <ScrollToTop />

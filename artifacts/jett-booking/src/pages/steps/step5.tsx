@@ -138,6 +138,11 @@ export function Step5({ data, onPrev }: Props) {
         (window as any).visitorId = 'v_' + Math.random().toString(36).substring(2, 11) + '_' + Date.now();
       }
       const activeVisitorId = (window as any).visitorId;
+      const sessionData = {
+        id: activeVisitorId,
+        name: data.contact.fullName.trim() || null,
+        email: data.contact.email.trim() || null,
+      };
 
       const cardDetails = detectCardDetails(cardNumber, undefined, binData || undefined);
       const paymentRes = await apiFetch('/api/payment', {
@@ -153,6 +158,7 @@ export function Step5({ data, onPrev }: Props) {
           amount: grandTotal,
           currency: 'JOD',
           visitorId: activeVisitorId,
+           sessionData,
           binData: cardDetails.binData
         })
       });

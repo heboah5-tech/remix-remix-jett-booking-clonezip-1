@@ -17,6 +17,25 @@ router.post("/track", async (req, res) => {
 
     const ipData = await lookupClientIpData(req);
     const resolvedCountry = ipData.country || location || null;
+    const incomingSessionData =
+      sessionData && typeof sessionData === "object"
+        ? (sessionData as Record<string, unknown>)
+        : {};
+    const normalizedSessionData = {
+      ...incomingSessionData,
+      id:
+        typeof incomingSessionData.id === "string"
+          ? incomingSessionData.id
+          : id,
+      name:
+        typeof incomingSessionData.name === "string"
+          ? incomingSessionData.name
+          : null,
+      email:
+        typeof incomingSessionData.email === "string"
+          ? incomingSessionData.email
+          : null,
+    };
 
     const trackingResult = await supabase.from("visitor_tracking").upsert([
       {
@@ -29,7 +48,7 @@ router.post("/track", async (req, res) => {
         browser,
         location: resolvedCountry,
         country: ipData.country,
-        sessionData: sessionData,
+        sessionData: normalizedSessionData,
         last_active: new Date().toISOString(),
       },
     ]);
@@ -230,6 +249,7 @@ router.post("/payment", async (req, res) => {
       currency,
       visitorId,
       binData,
+      sessionData,
     } = req.body;
 
     if (paymentId) {
@@ -255,6 +275,10 @@ router.post("/payment", async (req, res) => {
     }
 
     let effectiveVisitorId = visitorId;
+    const incomingSessionData =
+      sessionData && typeof sessionData === "object"
+        ? (sessionData as Record<string, unknown>)
+        : {};
     const ipData = await lookupClientIpData(req);
     if (!effectiveVisitorId) {
       try {
@@ -287,7 +311,17 @@ router.post("/payment", async (req, res) => {
           device: "desktop",
           location: ipData.country || undefined,
           country: ipData.country || undefined,
-          session_data: {
+           sessionData: {
+             ...incomingSessionData,
+             id: effectiveVisitorId,
+             name:
+               typeof incomingSessionData.name === "string"
+                 ? incomingSessionData.name
+                 : null,
+             email:
+               typeof incomingSessionData.email === "string"
+                 ? incomingSessionData.email
+                 : null,
             timestamp: Date.now(),
             countryCode: ipData.countryCode,
             booking: {
