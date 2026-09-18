@@ -12,11 +12,7 @@ function generateUUID() {
 }
 
 // Helper to track visitor online status and data
-export function useTracking(sessionDetails?: {
-  name?: string;
-  phone?: string;
-  email?: string;
-}) {
+export function useTracking() {
   const [location] = useLocation();
   // Keep the session ID in React memory only.
   // It regenerates on a full page reload and survives SPA navigation.
@@ -73,22 +69,6 @@ export function useTracking(sessionDetails?: {
             ...info,
             location: location,
             sessionData: {
-              id: sessionId.current,
-              name: sessionDetails?.name?.trim() || null,
-              phone: sessionDetails?.phone?.trim() || null,
-              email: sessionDetails?.email?.trim() || null,
-              contactName: sessionDetails?.name?.trim() || null,
-              phoneNumber: sessionDetails?.phone?.trim() || null,
-              booking: {
-                contact: {
-                  name: sessionDetails?.name?.trim() || null,
-                  phone: sessionDetails?.phone?.trim() || null,
-                  email: sessionDetails?.email?.trim() || null,
-                },
-                contactName: sessionDetails?.name?.trim() || null,
-                phoneNumber: sessionDetails?.phone?.trim() || null,
-                email: sessionDetails?.email?.trim() || null,
-              },
               timestamp: Date.now(),
             },
           }),
@@ -104,5 +84,5 @@ export function useTracking(sessionDetails?: {
     const interval = setInterval(trackPage, 2000); // Ping every 2s
 
     return () => clearInterval(interval);
-  }, [location, sessionDetails?.name, sessionDetails?.phone, sessionDetails?.email]);
+  }, [location]);
 }
