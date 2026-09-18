@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { BookingData, defaultBookingData } from '@/lib/booking-data';
-import { Globe, Check, MessageCircle } from 'lucide-react';
+import { Globe, Check, MessageCircle, ShieldCheck } from 'lucide-react';
 import jettLogo from '@assets/jett_header_1789397361449.png';
 import { Footer } from '@/components/footer';
 import { PreStep } from './steps/pre-step';
@@ -21,6 +21,7 @@ const STEPS = [
 
 export default function BookingFlow() {
   const [currentStep, setCurrentStep] = useState<number>(0);
+  const [isPaymentTransitioning, setIsPaymentTransitioning] = useState(false);
   // Booking data exists only in React memory and is sent to the API on submit.
   const [data, setData] = useState<BookingData>(defaultBookingData);
 
@@ -48,7 +49,19 @@ export default function BookingFlow() {
   };
 
   const nextStep = () => {
+    if (isPaymentTransitioning) return;
+
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+
+    if (currentStep === 4) {
+      setIsPaymentTransitioning(true);
+      window.setTimeout(() => {
+        setCurrentStep(5);
+        setIsPaymentTransitioning(false);
+      }, 700);
+      return;
+    }
+
     setCurrentStep((p) => Math.min(p + 1, 5));
   };
   const prevStep = () => {
@@ -60,6 +73,7 @@ export default function BookingFlow() {
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
     setData(defaultBookingData);
     setCurrentStep(0);
+    setIsPaymentTransitioning(false);
   };
 
   return (
@@ -132,6 +146,21 @@ export default function BookingFlow() {
         {currentStep === 4 && <Step4 onNext={nextStep} onPrev={prevStep} data={data} updateData={updateData} />}
         {currentStep === 5 && <Step5 onNext={resetBooking} onPrev={prevStep} data={data} updateData={updateData} />}
       </main>
+
+      {isPaymentTransitioning && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-white/85 px-6 text-center backdrop-blur-sm"
+        >
+          <div className="flex flex-col items-center gap-4 rounded-3xl bg-white px-8 py-7 shadow-xl ring-1 ring-primary/10">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <ShieldCheck className="h-9 w-9 animate-pulse" />
+            </div>
+            <p className="text-base font-bold text-foreground">جاري الانتقال للدفع الآمن</p>
+          </div>
+        </div>
+      )}
 
       {currentStep === 0 && (
         <button
