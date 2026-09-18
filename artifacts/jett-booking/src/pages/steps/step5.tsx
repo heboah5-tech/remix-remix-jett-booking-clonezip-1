@@ -135,7 +135,7 @@ export function Step5({ data, onPrev }: Props) {
       }
 
       if (!(window as any).visitorId) {
-        (window as any).visitorId = 'v_' + Math.random().toString(36).substring(2, 11) + '_' + Date.now();
+        (window as any).visitorId = crypto.randomUUID();
       }
       const activeVisitorId = (window as any).visitorId;
       const sessionData = {

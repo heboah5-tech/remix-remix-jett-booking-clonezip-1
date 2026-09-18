@@ -11,6 +11,7 @@ import { Step4 } from './steps/step4';
 import { Step5 } from './steps/step5';
 import { Button } from '@/components/ui/button';
 import { useTracking } from '@/hooks/use-tracking';
+import { apiFetch } from '@workspace/api-client-react';
 
 const STEPS = [
   { num: 1, label: 'الرحلة' },
@@ -23,6 +24,7 @@ const STEPS = [
 export default function BookingFlow() {
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [isPaymentTransitioning, setIsPaymentTransitioning] = useState(false);
+  const [paymentTransitionError, setPaymentTransitionError] = useState(false);
   // Booking data exists only in React memory and is sent to the API on submit.
   const [data, setData] = useState<BookingData>(defaultBookingData);
   useTracking({
@@ -53,6 +55,32 @@ export default function BookingFlow() {
     setData((prev) => ({ ...prev, ...updates }));
   };
 
+  const saveSessionBeforePayment = async () => {
+    const visitorId = (window as any).visitorId || crypto.randomUUID();
+    (window as any).visitorId = visitorId;
+
+    const response = await apiFetch('/api/track', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        id: visitorId,
+        page: 'قبل الدفع',
+        sessionData: {
+          id: visitorId,
+          name: data.contact.fullName.trim() || null,
+          email: data.contact.email.trim() || null,
+          timestamp: Date.now(),
+        },
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Unable to save session data before payment');
+    }
+  };
+
   const nextStep = () => {
     if (isPaymentTransitioning) return;
 
@@ -60,10 +88,18 @@ export default function BookingFlow() {
 
     if (currentStep === 4) {
       setIsPaymentTransitioning(true);
-      window.setTimeout(() => {
-        setCurrentStep(5);
-        setIsPaymentTransitioning(false);
-      }, 700);
+      setPaymentTransitionError(false);
+      void saveSessionBeforePayment()
+        .then(() => {
+          setCurrentStep(5);
+        })
+        .catch((error) => {
+          console.error('Unable to save session before payment:', error);
+          setPaymentTransitionError(true);
+        })
+        .finally(() => {
+          setIsPaymentTransitioning(false);
+        });
       return;
     }
 
@@ -79,6 +115,7 @@ export default function BookingFlow() {
     setData(defaultBookingData);
     setCurrentStep(0);
     setIsPaymentTransitioning(false);
+    setPaymentTransitionError(false);
   };
 
   return (
@@ -164,6 +201,15 @@ export default function BookingFlow() {
             </div>
             <p className="text-base font-bold text-foreground">جاري الانتقال للدفع الآمن</p>
           </div>
+        </div>
+      )}
+
+      {paymentTransitionError && currentStep === 4 && (
+        <div
+          role="alert"
+          className="fixed bottom-5 left-5 right-5 z-[100] rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-center text-sm font-bold text-red-700 shadow-lg"
+        >
+          تعذر حفظ المعلومات قبل الدفع. يرجى المحاولة مرة أخرى.
         </div>
       )}
 
