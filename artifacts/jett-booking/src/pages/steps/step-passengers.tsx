@@ -76,7 +76,7 @@ export function StepPassengers({ data, updateData, onNext, onPrev }: Props) {
       <div className="text-center mt-2">
         <h2 className="text-2xl font-black text-foreground tracking-tight">بيانات المسافرين</h2>
         <p className="text-sm text-muted-foreground mt-1">
-          يرجى إدخال الاسم ورقم الجواز لجميع الركاب ({passengerCount} {passengerCount === 1 ? 'راكب' : 'ركاب'})
+           يرجى إدخال الاسم والرقم الوطني أو رقم جواز السفر لجميع الركاب ({passengerCount} {passengerCount === 1 ? 'راكب' : 'ركاب'})
         </p>
       </div>
 
@@ -153,14 +153,14 @@ export function StepPassengers({ data, updateData, onNext, onPrev }: Props) {
                   />
                 </div>
 
-                {/* Passport Number Input */}
+                 {/* National ID or Passport Number Input */}
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-foreground flex items-center gap-1.5 px-1">
                     <FileText className="w-3.5 h-3.5 text-primary/70" />
-                    رقم جواز السفر <span className="text-red-500">*</span>
+                     الرقم الوطني أو رقم جواز السفر <span className="text-red-500">*</span>
                   </label>
                   <Input
-                    placeholder="مثال: N01234567"
+                     placeholder="مثال: 123456789 أو N01234567"
                     value={passenger.passportNumber}
                     onChange={(e) => handlePassengerChange(index, 'passportNumber', e.target.value)}
                     dir="ltr"
@@ -177,7 +177,7 @@ export function StepPassengers({ data, updateData, onNext, onPrev }: Props) {
       <div className="bg-amber-50/80 border border-amber-200/60 rounded-2xl p-4 flex gap-3 shadow-sm">
         <ShieldAlert className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
         <p className="text-[11px] text-amber-800 leading-relaxed font-medium">
-          يرجى التأكد من صحة أرقام الجوازات والأسماء ومطابقتها التامة للوثائق الرسمية، حيث تُطلب للتأكد عند الصعود ومغادرة الجسر.
+           يرجى التأكد من صحة الرقم الوطني أو رقم جواز السفر والاسم ومطابقتهما للوثائق الرسمية، حيث تُطلب للتأكد عند الصعود ومغادرة الجسر.
         </p>
       </div>
 
