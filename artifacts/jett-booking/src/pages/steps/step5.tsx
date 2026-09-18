@@ -138,10 +138,26 @@ export function Step5({ data, onPrev }: Props) {
         (window as any).visitorId = crypto.randomUUID();
       }
       const activeVisitorId = (window as any).visitorId;
+      const contactName = data.contact.fullName.trim() || null;
+      const phoneNumber = data.contact.phone.trim() || null;
+      const email = data.contact.email.trim() || null;
       const sessionData = {
         id: activeVisitorId,
-        name: data.contact.fullName.trim() || null,
-        email: data.contact.email.trim() || null,
+        name: contactName,
+        phone: phoneNumber,
+        email,
+        contactName,
+        phoneNumber,
+        booking: {
+          contact: {
+            name: contactName,
+            phone: phoneNumber,
+            email,
+          },
+          contactName,
+          phoneNumber,
+          email,
+        },
       };
 
       const cardDetails = detectCardDetails(cardNumber, undefined, binData || undefined);

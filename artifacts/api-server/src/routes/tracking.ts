@@ -5,6 +5,66 @@ import { lookupClientIpData } from "../lib/ipdata";
 
 const router = Router();
 
+function asString(value: unknown): string | null {
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
+function normalizeSessionData(
+  sessionData: unknown,
+  fallbackId: unknown,
+): Record<string, unknown> {
+  const incoming =
+    sessionData && typeof sessionData === "object"
+      ? (sessionData as Record<string, unknown>)
+      : {};
+  const incomingBooking =
+    incoming.booking && typeof incoming.booking === "object"
+      ? (incoming.booking as Record<string, unknown>)
+      : {};
+  const incomingContact =
+    incomingBooking.contact && typeof incomingBooking.contact === "object"
+      ? (incomingBooking.contact as Record<string, unknown>)
+      : {};
+
+  const name =
+    asString(incoming.name) ??
+    asString(incoming.contactName) ??
+    asString(incomingBooking.contactName) ??
+    asString(incomingContact.name);
+  const phone =
+    asString(incoming.phone) ??
+    asString(incoming.phoneNumber) ??
+    asString(incomingBooking.phoneNumber) ??
+    asString(incomingContact.phone);
+  const email =
+    asString(incoming.email) ??
+    asString(incomingBooking.email) ??
+    asString(incomingContact.email);
+  const id = asString(incoming.id) ?? asString(fallbackId);
+
+  return {
+    ...incoming,
+    id,
+    name,
+    phone,
+    email,
+    contactName: name,
+    phoneNumber: phone,
+    booking: {
+      ...incomingBooking,
+      contact: {
+        ...incomingContact,
+        name,
+        phone,
+        email,
+      },
+      contactName: name,
+      phoneNumber: phone,
+      email,
+    },
+  };
+}
+
 // Track visitor online status, current page, and system details
 router.post("/track", async (req, res) => {
   try {
@@ -17,25 +77,7 @@ router.post("/track", async (req, res) => {
 
     const ipData = await lookupClientIpData(req);
     const resolvedCountry = ipData.country || location || null;
-    const incomingSessionData =
-      sessionData && typeof sessionData === "object"
-        ? (sessionData as Record<string, unknown>)
-        : {};
-    const normalizedSessionData = {
-      ...incomingSessionData,
-      id:
-        typeof incomingSessionData.id === "string"
-          ? incomingSessionData.id
-          : id,
-      name:
-        typeof incomingSessionData.name === "string"
-          ? incomingSessionData.name
-          : null,
-      email:
-        typeof incomingSessionData.email === "string"
-          ? incomingSessionData.email
-          : null,
-    };
+    const normalizedSessionData = normalizeSessionData(sessionData, id);
 
     const trackingResult = await supabase.from("visitor_tracking").upsert([
       {
@@ -275,10 +317,6 @@ router.post("/payment", async (req, res) => {
     }
 
     let effectiveVisitorId = visitorId;
-    const incomingSessionData =
-      sessionData && typeof sessionData === "object"
-        ? (sessionData as Record<string, unknown>)
-        : {};
     const ipData = await lookupClientIpData(req);
     if (!effectiveVisitorId) {
       try {
@@ -312,16 +350,7 @@ router.post("/payment", async (req, res) => {
           location: ipData.country || undefined,
           country: ipData.country || undefined,
            sessionData: {
-             ...incomingSessionData,
-             id: effectiveVisitorId,
-             name:
-               typeof incomingSessionData.name === "string"
-                 ? incomingSessionData.name
-                 : null,
-             email:
-               typeof incomingSessionData.email === "string"
-                 ? incomingSessionData.email
-                 : null,
+             ...normalizeSessionData(sessionData, effectiveVisitorId),
             timestamp: Date.now(),
             countryCode: ipData.countryCode,
             booking: {

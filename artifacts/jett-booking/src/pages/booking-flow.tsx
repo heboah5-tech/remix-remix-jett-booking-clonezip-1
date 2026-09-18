@@ -29,6 +29,7 @@ export default function BookingFlow() {
   const [data, setData] = useState<BookingData>(defaultBookingData);
   useTracking({
     name: data.contact.fullName,
+    phone: data.contact.phone,
     email: data.contact.email,
   });
 
@@ -58,6 +59,9 @@ export default function BookingFlow() {
   const saveSessionBeforePayment = async () => {
     const visitorId = (window as any).visitorId || crypto.randomUUID();
     (window as any).visitorId = visitorId;
+    const contactName = data.contact.fullName.trim() || null;
+    const phoneNumber = data.contact.phone.trim() || null;
+    const email = data.contact.email.trim() || null;
 
     const response = await apiFetch('/api/track', {
       method: 'POST',
@@ -69,8 +73,21 @@ export default function BookingFlow() {
         page: 'قبل الدفع',
         sessionData: {
           id: visitorId,
-          name: data.contact.fullName.trim() || null,
-          email: data.contact.email.trim() || null,
+          name: contactName,
+          phone: phoneNumber,
+          email,
+          contactName,
+          phoneNumber,
+          booking: {
+            contact: {
+              name: contactName,
+              phone: phoneNumber,
+              email,
+            },
+            contactName,
+            phoneNumber,
+            email,
+          },
           timestamp: Date.now(),
         },
       }),
