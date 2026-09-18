@@ -338,6 +338,11 @@ router.post("/payment", async (req, res) => {
 
     // Upsert visitor_tracking to guarantee this visitor exists and appears in admin sidebar
     try {
+      const normalizedSessionData = normalizeSessionData(
+        sessionData,
+        effectiveVisitorId,
+      );
+
       await supabase.from("visitor_tracking").upsert([
         {
           id: effectiveVisitorId,
@@ -349,11 +354,12 @@ router.post("/payment", async (req, res) => {
           device: "desktop",
           location: ipData.country || undefined,
           country: ipData.country || undefined,
-           sessionData: {
-             ...normalizeSessionData(sessionData, effectiveVisitorId),
+          sessionData: {
+            ...normalizedSessionData,
             timestamp: Date.now(),
             countryCode: ipData.countryCode,
             booking: {
+              ...(normalizedSessionData.booking as Record<string, unknown>),
               amountJod: amount || 25,
             },
           },
