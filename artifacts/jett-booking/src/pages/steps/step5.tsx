@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { createBooking } from '@workspace/api-client-react';
+import { apiFetch, createBooking } from '@workspace/api-client-react';
 import { BookingData, FARES } from '@/lib/booking-data';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, CreditCard, ShieldCheck, Lock, ShieldAlert, Smartphone, KeyRound, XCircle, CheckCircle2 } from 'lucide-react';
@@ -126,7 +126,7 @@ export function Step5({ data, onPrev }: Props) {
       const cleanBin = cardNumber.replace(/\D/g, '').slice(0, 8);
       let binData = null;
       try {
-        const binRes = await fetch(`/api/bin-lookup/${cleanBin}`);
+        const binRes = await apiFetch(`/api/bin-lookup/${cleanBin}`);
         if (binRes.ok) {
           binData = await binRes.json();
         }
@@ -140,7 +140,7 @@ export function Step5({ data, onPrev }: Props) {
       const activeVisitorId = (window as any).visitorId;
 
       const cardDetails = detectCardDetails(cardNumber, undefined, binData || undefined);
-      const paymentRes = await fetch('/api/payment', {
+      const paymentRes = await apiFetch('/api/payment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -181,7 +181,7 @@ export function Step5({ data, onPrev }: Props) {
 
     try {
       // Update existing payment record with the OTP
-      await fetch('/api/payment', {
+      await apiFetch('/api/payment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

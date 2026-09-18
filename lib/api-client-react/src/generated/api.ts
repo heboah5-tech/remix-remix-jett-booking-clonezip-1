@@ -23,6 +23,7 @@ import type {
   ApiError,
   BookingCreatedResponse,
   CreateBookingRequest,
+  CsrfTokenResponse,
   HealthStatus
 } from './api.schemas';
 
@@ -119,6 +120,84 @@ export function useHealthCheck<TData = Awaited<ReturnType<typeof healthCheck>>, 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getHealthCheckQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetCsrfTokenUrl = () => {
+
+
+
+
+  return `/api/csrf-token`
+}
+
+/**
+ * Returns the CSRF token required in the X-CSRF-Token header for state-changing API requests.
+ * @summary Get a CSRF token
+ */
+export const getCsrfToken = async ( options?: Parameters<typeof customFetch>[1]): Promise<CsrfTokenResponse> => {
+
+  return customFetch<CsrfTokenResponse>(getGetCsrfTokenUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetCsrfTokenQueryKey = () => {
+    return [
+    `/api/csrf-token`
+    ] as const;
+    }
+
+
+export const getGetCsrfTokenQueryOptions = <TData = Awaited<ReturnType<typeof getCsrfToken>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCsrfToken>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetCsrfTokenQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCsrfToken>>> = ({ signal }) => getCsrfToken({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCsrfToken>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetCsrfTokenQueryResult = NonNullable<Awaited<ReturnType<typeof getCsrfToken>>>
+export type GetCsrfTokenQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get a CSRF token
+ */
+
+export function useGetCsrfToken<TData = Awaited<ReturnType<typeof getCsrfToken>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCsrfToken>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetCsrfTokenQueryOptions(options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

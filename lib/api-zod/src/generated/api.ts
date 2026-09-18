@@ -18,6 +18,15 @@ export const HealthCheckResponse = zod.object({
 
 
 /**
+ * Returns the CSRF token required in the X-CSRF-Token header for state-changing API requests.
+ * @summary Get a CSRF token
+ */
+export const GetCsrfTokenResponse = zod.object({
+  "csrfToken": zod.string()
+})
+
+
+/**
  * Stores non-sensitive booking details before payment verification.
  * @summary Save a JETT booking
  */

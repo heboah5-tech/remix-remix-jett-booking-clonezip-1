@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useLocation } from "wouter";
+import { apiFetch } from "@workspace/api-client-react";
 
 // Helper to generate a valid UUID
 function generateUUID() {
@@ -57,7 +58,7 @@ export function useTracking() {
         // We simulate location here, in a real app you'd use a GeoIP service on the backend
         const locationStr = "Unknown";
 
-        await fetch(`${window.location.origin}/api/track`, {
+        await apiFetch(`${window.location.origin}/api/track`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

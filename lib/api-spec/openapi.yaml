@@ -26,6 +26,19 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /csrf-token:
+    get:
+      operationId: getCsrfToken
+      tags: [health]
+      summary: Get a CSRF token
+      description: Returns the CSRF token required in the X-CSRF-Token header for state-changing API requests.
+      responses:
+        "200":
+          description: CSRF token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CsrfTokenResponse"
   /bookings:
     post:
       operationId: createBooking
@@ -66,6 +79,13 @@ components:
           type: string
       required:
         - status
+    CsrfTokenResponse:
+      type: object
+      properties:
+        csrfToken:
+          type: string
+      required:
+        - csrfToken
     CreateBookingRequest:
       type: object
       additionalProperties: false

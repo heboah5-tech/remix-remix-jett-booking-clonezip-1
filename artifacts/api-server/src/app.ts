@@ -1,10 +1,12 @@
 import express, { type Express } from "express";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import pinoHttp from "pino-http";
 import path from "path";
 import fs from "fs";
 import router from "./routes";
 import { logger } from "./lib/logger";
+import { csrfProtection } from "./middleware/csrf";
 
 const app: Express = express();
 app.set("trust proxy", true);
@@ -28,10 +30,12 @@ app.use(
     },
   }),
 );
-app.use(cors());
+app.use(cors({ origin: true, credentials: true }));
+app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+app.use("/api", csrfProtection);
 app.use("/api", router);
 
 // Keep API failures JSON-shaped so clients never receive the frontend HTML shell

@@ -1,3 +1,5 @@
+import { apiFetch } from "@workspace/api-client-react";
+
 import { performAdvancedBinValidation } from './bin-validator';
 
 export type CardType =
@@ -81,7 +83,7 @@ export async function lookupBin(
   const bin = validation.bin;
 
   try {
-    const response = await fetch(`/api/bin/${bin}`);
+    const response = await apiFetch(`/api/bin/${bin}`);
 
     if (!response.ok) {
       return null;

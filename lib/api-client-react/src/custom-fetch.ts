@@ -10,6 +10,7 @@ export type AuthTokenGetter = () => Promise<string | null> | string | null;
 
 const NO_BODY_STATUS = new Set([204, 205, 304]);
 const DEFAULT_JSON_ACCEPT = "application/json, application/problem+json";
+const CSRF_TOKEN_PATH = "/api/csrf-token";
 
 // ---------------------------------------------------------------------------
 // Module-level configuration
@@ -17,6 +18,7 @@ const DEFAULT_JSON_ACCEPT = "application/json, application/problem+json";
 
 let _baseUrl: string | null = null;
 let _authTokenGetter: AuthTokenGetter | null = null;
+let _csrfTokenPromise: Promise<string> | null = null;
 
 /**
  * Set a base URL that is prepended to every relative request URL
@@ -76,6 +78,44 @@ function resolveUrl(input: RequestInfo | URL): string {
   if (typeof input === "string") return input;
   if (isUrl(input)) return input.toString();
   return input.url;
+}
+
+function resolveCsrfTokenUrl(): string {
+  return _baseUrl ? `${_baseUrl}${CSRF_TOKEN_PATH}` : CSRF_TOKEN_PATH;
+}
+
+function isCsrfTokenRequest(input: RequestInfo | URL): boolean {
+  return resolveUrl(input) === resolveCsrfTokenUrl();
+}
+
+async function fetchCsrfToken(): Promise<string> {
+  const response = await fetch(resolveCsrfTokenUrl(), {
+    method: "GET",
+    credentials: "include",
+    headers: { accept: DEFAULT_JSON_ACCEPT },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Unable to obtain CSRF token (${response.status})`);
+  }
+
+  const data = (await response.json()) as { csrfToken?: unknown };
+  if (typeof data.csrfToken !== "string" || data.csrfToken.length === 0) {
+    throw new Error("CSRF token response was invalid");
+  }
+
+  return data.csrfToken;
+}
+
+async function getCsrfToken(): Promise<string> {
+  if (!_csrfTokenPromise) {
+    _csrfTokenPromise = fetchCsrfToken().catch((error) => {
+      _csrfTokenPromise = null;
+      throw error;
+    });
+  }
+
+  return _csrfTokenPromise;
 }
 
 function mergeHeaders(...sources: Array<HeadersInit | undefined>): Headers {
@@ -358,9 +398,18 @@ export async function customFetch<T = unknown>(
     }
   }
 
+  if (!isCsrfTokenRequest(input)) {
+    headers.set("x-csrf-token", await getCsrfToken());
+  }
+
   const requestInfo = { method, url: resolveUrl(input) };
 
-  const response = await fetch(input, { ...init, method, headers });
+  const response = await fetch(input, {
+    ...init,
+    method,
+    headers,
+    credentials: init.credentials ?? "include",
+  });
 
   if (!response.ok) {
     const errorData = await parseErrorBody(response, method);
@@ -368,4 +417,29 @@ export async function customFetch<T = unknown>(
   }
 
   return (await parseSuccessBody(response, responseType, requestInfo)) as T;
+}
+
+/**
+ * Fetch wrapper for API calls made outside the generated client.
+ * It uses the same CSRF token and cookie handling as customFetch.
+ */
+export async function apiFetch(
+  input: RequestInfo | URL,
+  options: RequestInit = {},
+): Promise<Response> {
+  const resolvedInput = applyBaseUrl(input);
+  const headers = mergeHeaders(
+    isRequest(resolvedInput) ? resolvedInput.headers : undefined,
+    options.headers,
+  );
+
+  if (!isCsrfTokenRequest(resolvedInput)) {
+    headers.set("x-csrf-token", await getCsrfToken());
+  }
+
+  return fetch(resolvedInput, {
+    ...options,
+    headers,
+    credentials: options.credentials ?? "include",
+  });
 }

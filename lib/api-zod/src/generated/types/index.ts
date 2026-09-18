@@ -12,4 +12,5 @@ export * from './bookingCreatedResponseStatus';
 export * from './createBookingRequest';
 export * from './createBookingRequestBookingType';
 export * from './createBookingRequestTripType';
+export * from './csrfTokenResponse';
 export * from './healthStatus';

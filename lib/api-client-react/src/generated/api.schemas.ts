@@ -9,6 +9,10 @@ export interface HealthStatus {
   status: string;
 }
 
+export interface CsrfTokenResponse {
+  csrfToken: string;
+}
+
 export type CreateBookingRequestBookingType = typeof CreateBookingRequestBookingType[keyof typeof CreateBookingRequestBookingType];
 
 
