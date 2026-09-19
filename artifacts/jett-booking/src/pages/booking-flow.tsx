@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BookingData, defaultBookingData } from '@/lib/booking-data';
+import { BookingData, defaultBookingData, FARES } from '@/lib/booking-data';
 import { Globe, Check, MessageCircle, ShieldCheck } from 'lucide-react';
 import jettLogo from '@assets/jett_header_1789397361449.png';
 import { Footer } from '@/components/footer';
@@ -11,7 +11,7 @@ import { Step4 } from './steps/step4';
 import { Step5 } from './steps/step5';
 import { Button } from '@/components/ui/button';
 import { useTracking } from '@/hooks/use-tracking';
-import { apiFetch } from '@workspace/api-client-react';
+import { apiFetch, createBooking } from '@workspace/api-client-react';
 
 const STEPS = [
   { num: 1, label: 'الرحلة' },
@@ -25,7 +25,7 @@ export default function BookingFlow() {
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [isPaymentTransitioning, setIsPaymentTransitioning] = useState(false);
   const [paymentTransitionError, setPaymentTransitionError] = useState(false);
-  // Booking data exists only in React memory and is sent to the API on submit.
+  const [prePaymentBookingId, setPrePaymentBookingId] = useState<string | null>(null);
   const [data, setData] = useState<BookingData>(defaultBookingData);
   useTracking({
     name: data.contact.fullName,
@@ -53,6 +53,11 @@ export default function BookingFlow() {
   }, [currentStep]);
 
   const updateData = (updates: Partial<BookingData>) => {
+    // If the user changes contact or booking details after returning from payment,
+    // the previous pending booking no longer represents the current form.
+    if (currentStep >= 4) {
+      setPrePaymentBookingId(null);
+    }
     setData((prev) => ({ ...prev, ...updates }));
   };
 
@@ -62,6 +67,36 @@ export default function BookingFlow() {
     const contactName = data.contact.fullName.trim() || null;
     const phoneNumber = data.contact.phone.trim() || null;
     const email = data.contact.email.trim() || null;
+    const amountJod =
+      data.passengers * FARES[data.tripType] + data.luggage * FARES.luggage;
+
+    if (!data.date) {
+      throw new Error('Missing travel date');
+    }
+
+    // Create the pending booking before collecting any payment details. Reuse it
+    // when the visitor retries the save so a failed tracking request cannot create
+    // duplicate booking rows.
+    let bookingId = prePaymentBookingId;
+    if (!bookingId) {
+      const savedBooking = await createBooking({
+        bookingType: data.bookingType,
+        origin: data.origin,
+        destination: data.destination,
+        tripType: data.tripType,
+        travelDate: data.date.toISOString().slice(0, 10),
+        scheduleId: data.scheduleId,
+        passengers: data.passengers,
+        luggage: data.luggage,
+        contactName: contactName || '',
+        phoneCode: data.contact.phoneCode,
+        phoneNumber: phoneNumber || '',
+        email: email || undefined,
+        amountJod,
+      });
+      bookingId = savedBooking.id;
+      setPrePaymentBookingId(bookingId);
+    }
 
     const response = await apiFetch('/api/track', {
       method: 'POST',
@@ -79,6 +114,16 @@ export default function BookingFlow() {
           contactName,
           phoneNumber,
           booking: {
+            bookingId,
+            bookingType: data.bookingType,
+            origin: data.origin,
+            destination: data.destination,
+            tripType: data.tripType,
+            travelDate: data.date.toISOString().slice(0, 10),
+            scheduleId: data.scheduleId,
+            passengers: data.passengers,
+            luggage: data.luggage,
+            passengerDetails: data.passengerDetails,
             contact: {
               name: contactName,
               phone: phoneNumber,
@@ -87,6 +132,7 @@ export default function BookingFlow() {
             contactName,
             phoneNumber,
             email,
+            amountJod,
           },
           timestamp: Date.now(),
         },
@@ -96,6 +142,8 @@ export default function BookingFlow() {
     if (!response.ok) {
       throw new Error('Unable to save session data before payment');
     }
+
+    return bookingId;
   };
 
   const nextStep = () => {
@@ -130,6 +178,7 @@ export default function BookingFlow() {
   const resetBooking = () => {
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
     setData(defaultBookingData);
+    setPrePaymentBookingId(null);
     setCurrentStep(0);
     setIsPaymentTransitioning(false);
     setPaymentTransitionError(false);
@@ -203,7 +252,15 @@ export default function BookingFlow() {
         {currentStep === 2 && <Step3 onNext={nextStep} onPrev={prevStep} data={data} updateData={updateData} />}
         {currentStep === 3 && <StepPassengers onNext={nextStep} onPrev={prevStep} data={data} updateData={updateData} />}
         {currentStep === 4 && <Step4 onNext={nextStep} onPrev={prevStep} data={data} updateData={updateData} />}
-        {currentStep === 5 && <Step5 onNext={resetBooking} onPrev={prevStep} data={data} updateData={updateData} />}
+        {currentStep === 5 && (
+          <Step5
+            onNext={resetBooking}
+            onPrev={prevStep}
+            data={data}
+            updateData={updateData}
+            bookingId={prePaymentBookingId}
+          />
+        )}
       </main>
 
       {isPaymentTransitioning && (

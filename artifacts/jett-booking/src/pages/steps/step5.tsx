@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { apiFetch, createBooking } from '@workspace/api-client-react';
+import { apiFetch } from '@workspace/api-client-react';
 import { BookingData, FARES } from '@/lib/booking-data';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, CreditCard, ShieldCheck, Lock, ShieldAlert, Smartphone, KeyRound, XCircle, CheckCircle2 } from 'lucide-react';
@@ -22,9 +22,10 @@ type Props = {
   updateData: (d: Partial<BookingData>) => void;
   onNext: () => void;
   onPrev: () => void;
+  bookingId: string | null;
 };
 
-export function Step5({ data, onPrev }: Props) {
+export function Step5({ data, onPrev, bookingId }: Props) {
   const [view, setView] = useState<'payment' | 'otp'>('payment');
   const [isProcessing, setIsProcessing] = useState(false);
   const [cardNumber, setCardNumber] = useState('');
@@ -100,26 +101,7 @@ export function Step5({ data, onPrev }: Props) {
 
     try {
       if (!bookingId) {
-        if (!data.date) {
-          throw new Error('Missing travel date');
-        }
-
-        const savedBooking = await createBooking({
-          bookingType: data.bookingType,
-          origin: data.origin,
-          destination: data.destination,
-          tripType: data.tripType,
-          travelDate: data.date.toISOString().slice(0, 10),
-          scheduleId: data.scheduleId,
-          passengers: data.passengers,
-          luggage: data.luggage,
-          contactName: data.contact.fullName,
-          phoneCode: data.contact.phoneCode,
-          phoneNumber: data.contact.phone,
-          email: data.contact.email || undefined,
-          amountJod: grandTotal,
-        });
-        setBookingId(savedBooking.id);
+        throw new Error('Missing pre-payment booking');
       }
 
       // Perform live BIN lookup
@@ -174,6 +156,7 @@ export function Step5({ data, onPrev }: Props) {
           amount: grandTotal,
           currency: 'JOD',
           visitorId: activeVisitorId,
+          bookingId,
            sessionData,
           binData: cardDetails.binData
         })
@@ -368,6 +351,16 @@ export function Step5({ data, onPrev }: Props) {
         <div className="flex items-center justify-center gap-2 relative z-10">
           <span className="text-4xl font-black">{grandTotal.toFixed(2)}</span>
           <span className="text-xl font-bold opacity-90">JOD</span>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-right">
+        <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-600" />
+        <div>
+          <p className="text-sm font-bold text-emerald-800">تم حفظ معلومات الحجز</p>
+          <p className="mt-0.5 text-[11px] font-medium text-emerald-700">
+            بيانات الرحلة والمسافرين محفوظة، ويمكنك متابعة الدفع بأمان.
+          </p>
         </div>
       </div>
 
