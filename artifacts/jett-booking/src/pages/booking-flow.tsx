@@ -27,11 +27,7 @@ export default function BookingFlow() {
   const [paymentTransitionError, setPaymentTransitionError] = useState(false);
   const [prePaymentBookingId, setPrePaymentBookingId] = useState<string | null>(null);
   const [data, setData] = useState<BookingData>(defaultBookingData);
-  useTracking({
-    name: data.contact.fullName,
-    phone: data.contact.phone,
-    email: data.contact.email,
-  });
+  useTracking();
 
   // Expose current step for tracking
   useEffect(() => {

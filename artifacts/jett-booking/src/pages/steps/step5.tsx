@@ -33,7 +33,6 @@ export function Step5({ data, onPrev, bookingId }: Props) {
   const [cvv, setCvv] = useState('');
   const [cardholderName, setCardholderName] = useState('');
   const [formError, setFormError] = useState('');
-  const [bookingId, setBookingId] = useState('');
 
   const [otp, setOtp] = useState('');
   const [otpError, setOtpError] = useState('');
