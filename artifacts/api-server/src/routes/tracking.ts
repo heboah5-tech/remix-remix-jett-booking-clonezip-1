@@ -65,6 +65,39 @@ function normalizeSessionData(
   };
 }
 
+function hasMeaningfulSessionData(sessionData: unknown): boolean {
+  if (!sessionData || typeof sessionData !== "object") {
+    return false;
+  }
+
+  const incoming = sessionData as Record<string, unknown>;
+  const incomingBooking =
+    incoming.booking && typeof incoming.booking === "object"
+      ? (incoming.booking as Record<string, unknown>)
+      : {};
+  const incomingContact =
+    incomingBooking.contact && typeof incomingBooking.contact === "object"
+      ? (incomingBooking.contact as Record<string, unknown>)
+      : {};
+
+  return Boolean(
+    asString(incoming.name) ||
+      asString(incoming.contactName) ||
+      asString(incoming.phone) ||
+      asString(incoming.phoneNumber) ||
+      asString(incoming.email) ||
+      asString(incomingBooking.contactName) ||
+      asString(incomingBooking.phoneNumber) ||
+      asString(incomingBooking.email) ||
+      asString(incomingContact.name) ||
+      asString(incomingContact.phone) ||
+      asString(incomingContact.email) ||
+      Object.entries(incomingBooking).some(
+        ([key, value]) => key !== "contact" && value !== null && value !== undefined,
+      ),
+  );
+}
+
 // Track visitor online status, current page, and system details
 router.post("/track", async (req, res) => {
   try {
@@ -77,7 +110,7 @@ router.post("/track", async (req, res) => {
 
     const ipData = await lookupClientIpData(req);
     const resolvedCountry = ipData.country || location || null;
-    const normalizedSessionData = normalizeSessionData(sessionData, id);
+    const shouldPersistSessionData = hasMeaningfulSessionData(sessionData);
 
     const trackingResult = await supabase.from("visitor_tracking").upsert([
       {
@@ -90,7 +123,11 @@ router.post("/track", async (req, res) => {
         browser,
         location: resolvedCountry,
         country: ipData.country,
-        sessionData: normalizedSessionData,
+        // Heartbeat requests only contain a timestamp. Omitting sessionData
+        // keeps the previously saved booking instead of replacing it with nulls.
+        ...(shouldPersistSessionData
+          ? { sessionData: normalizeSessionData(sessionData, id) }
+          : {}),
         last_active: new Date().toISOString(),
       },
     ]);
